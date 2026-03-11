@@ -63,7 +63,7 @@ export function FolioChat({
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const resolvedTheme = theme === "auto"
-    ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+    ? (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
     : theme;
   const colors = THEMES[resolvedTheme];
 

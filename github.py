@@ -38,7 +38,6 @@ CODE_EXTENSIONS = {
 class GithubCrawler:
     def __init__(self, token: Optional[str] = None):
         self.gh = Github(token) if token else Github()
-        self.token = token
 
     def crawl(self, username: str, include_private: bool = False) -> dict:
         """
