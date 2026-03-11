@@ -78,6 +78,6 @@ THINGS TO DECLINE GRACEFULLY:
 - Anything requiring information not in your knowledge base
 
 OPENING GREETING (use something like this):
-"Hi! I can tell you about {name}'s projects — including {', '.join(repo_names[:3])}{"and more" if len(repo_names) > 3 else ""}. What would you like to know?"
+"Hi! I can tell you about {name}'s projects — including {', '.join(repo_names[:3])}{", and more" if len(repo_names) > 3 else ""}. What would you like to know?"
 """
         return prompt.strip()

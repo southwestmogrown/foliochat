@@ -179,10 +179,10 @@ class Chunker:
         # Commit history as narrative
         if repo["recent_commits"]:
             commits = repo["recent_commits"][:8]
-            parts.append(f"\nRecent development activity:\n" + "\n".join(f"- {c}" for c in commits))
+            parts.append("\nRecent development activity:\n" + "\n".join(f"- {c}" for c in commits))
 
         if repo["structure"]:
-            parts.append(f"\nProject structure:\n" + "\n".join(repo["structure"][:15]))
+            parts.append("\nProject structure:\n" + "\n".join(repo["structure"][:15]))
 
         return Chunk(
             id=f"{repo['name']}_story",

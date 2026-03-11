@@ -11,15 +11,30 @@ LLM backends: openai | anthropic | ollama
 import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Literal
+
+# ── Constants ─────────────────────────────────────────────────────────────────
+
+MAX_MESSAGE_LENGTH = 2000  # characters — prevents oversized LLM payloads
+MAX_TOKENS = 500
+OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
+
+# CORS — reads from CORS_ORIGINS env var (comma-separated) or defaults to
+# localhost for local dev. Override in production with your portfolio domain.
+_cors_origins_env = os.environ.get("CORS_ORIGINS", "")
+CORS_ORIGINS: list[str] = (
+    [o.strip() for o in _cors_origins_env.split(",") if o.strip()]
+    if _cors_origins_env
+    else ["*"]
+)
 
 app = FastAPI(title="FolioChat API", version="0.1.0")
 
 # CORS — allow the portfolio frontend to call this API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Tighten this in production
+    allow_origins=CORS_ORIGINS,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
@@ -28,12 +43,12 @@ app.add_middleware(
 # ── Request / Response models ─────────────────────────────────────────────────
 
 class Message(BaseModel):
-    role: str   # "user" | "assistant"
+    role: Literal["user", "assistant"]
     content: str
 
 
 class ChatRequest(BaseModel):
-    message: str
+    message: str = Field(..., min_length=1, max_length=MAX_MESSAGE_LENGTH)
     history: list[Message] = []
 
 
@@ -191,7 +206,7 @@ async def _openai_chat(system: str, messages: list, model: str) -> str:
     response = await client.chat.completions.create(
         model=model,
         messages=[{"role": "system", "content": system}] + messages,
-        max_tokens=500,
+        max_tokens=MAX_TOKENS,
         temperature=0.3,
     )
     return response.choices[0].message.content
@@ -204,7 +219,7 @@ async def _anthropic_chat(system: str, messages: list, model: str) -> str:
         model=model,
         system=system,
         messages=messages,
-        max_tokens=500,
+        max_tokens=MAX_TOKENS,
     )
     return response.content[0].text
 
@@ -218,7 +233,7 @@ async def _ollama_chat(system: str, messages: list, model: str) -> str:
     }
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            "http://localhost:11434/api/chat",
+            f"{OLLAMA_HOST}/api/chat",
             json=payload,
             timeout=60.0,
         )

@@ -42,7 +42,6 @@ def build(
     from cli.store.chroma import ChromaStore
     from cli.serve.prompt import SystemPromptGenerator
     import json
-    from pathlib import Path
 
     console.print(Panel(
         f"[bold orange1]FolioChat[/bold orange1] — Building portfolio database for [cyan]{username}[/cyan]",
