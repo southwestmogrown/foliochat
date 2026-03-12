@@ -52,9 +52,15 @@ class LocalEmbedder(BaseEmbedder):
                 "Run: pip install sentence-transformers"
             )
 
+    BATCH_SIZE = 50
+
     def embed(self, texts: list[str]) -> list[list[float]]:
-        embeddings = self._model.encode(texts, convert_to_numpy=True)
-        return embeddings.tolist()
+        results: list[list[float]] = []
+        for i in range(0, len(texts), self.BATCH_SIZE):
+            batch = texts[i : i + self.BATCH_SIZE]
+            embeddings = self._model.encode(batch, convert_to_numpy=True)
+            results.extend(embeddings.tolist())
+        return results
 
     def embed_query(self, text: str) -> list[float]:
         return self.embed([text])[0]
