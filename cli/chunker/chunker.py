@@ -263,6 +263,7 @@ class Chunker:
             if not found_content:
                 if (not stripped or
                     stripped.startswith("![") or
+                    stripped.startswith("[![") or  # linked badge [![text](img)](url) starts with '[', not '!['
                     stripped.startswith("<") or
                     stripped.startswith("#")):
                     continue
