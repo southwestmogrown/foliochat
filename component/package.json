@@ -1,0 +1,32 @@
+{
+  "name": "@foliochat/widget",
+  "version": "0.1.0",
+  "description": "FolioChat React/TypeScript floating chat widget",
+  "main": "dist/foliochat.js",
+  "types": "dist/foliochat.d.ts",
+  "files": [
+    "dist",
+    "foliochat.tsx"
+  ],
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "eslint foliochat.tsx --ext .tsx"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "portfolio",
+    "chatbot",
+    "widget",
+    "react",
+    "github"
+  ],
+  "license": "MIT"
+}
