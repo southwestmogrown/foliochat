@@ -181,6 +181,19 @@ Local embeddings use `sentence-transformers/all-MiniLM-L6-v2` and run entirely o
 
 ---
 
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| `"Could not connect to FolioChat server"` in the widget | Ensure `foliochat serve` is running and the `endpoint` prop is correct |
+| CORS errors in the browser console | Set `CORS_ORIGINS=https://yourdomain.com` on the server before serving |
+| Stale project data in the chatbot | Run `foliochat build --username <you> --refresh` |
+| Rate-limit errors during build | Pass `--token ghp_...` to use an authenticated GitHub token (5,000 req/hr) |
+| `FOLIOCHAT_USERNAME not set` server error | Always start the server with `foliochat serve --username <you>`, not `uvicorn` directly |
+| Embedder mismatch between build and serve | Rebuild with the same `--embedder` flag you intend to use; the choice is recorded in `metadata.json` |
+
+---
+
 ## Architecture Notes
 
 **Why smart chunking?** Naive character-count splitting destroys context. A README section about architecture should stay together. A project's tech stack is one unit of meaning. FolioChat chunks by semantic type — overview, tech, story, detail — so retrieval matches the shape of the question being asked.
@@ -189,11 +202,13 @@ Local embeddings use `sentence-transformers/all-MiniLM-L6-v2` and run entirely o
 
 **Why ChromaDB?** Zero config, no server to run, persists to disk. Everything lives in `~/.foliochat/[username]/`.
 
+For a detailed walk-through of every module, data model, and design decision, see [docs/architecture.md](docs/architecture.md).
+
 ---
 
 ## Contributing
 
-PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions.
+PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, testing, and code-style instructions.
 
 Built by [@southwestmogrown](https://github.com/southwestmogrown).
 
