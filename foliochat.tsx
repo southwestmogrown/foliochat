@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -60,11 +60,25 @@ export function FolioChat({
   const [loading, setLoading] = useState(false);
   const [context, setContext] = useState<PortfolioContext | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [systemDark, setSystemDark] = useState(
+    typeof window !== "undefined"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+      : false
+  );
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const resolvedTheme = theme === "auto"
-    ? (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
-    : theme;
+  // Live-track system color-scheme changes for "auto" theme
+  useEffect(() => {
+    if (theme !== "auto") return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = (e: MediaQueryListEvent) => setSystemDark(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, [theme]);
+
+  const resolvedTheme =
+    theme === "auto" ? (systemDark ? "dark" : "light") : theme;
   const colors = THEMES[resolvedTheme];
 
   // Fetch context on mount
@@ -85,6 +99,25 @@ export function FolioChat({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  // Focus input when chat opens (brief delay lets the element mount/paint first)
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }, [open]);
+
+  // Close on ESC key
+  const handleWindowKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape" && open) setOpen(false);
+    },
+    [open]
+  );
+  useEffect(() => {
+    window.addEventListener("keydown", handleWindowKey);
+    return () => window.removeEventListener("keydown", handleWindowKey);
+  }, [handleWindowKey]);
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
@@ -190,6 +223,7 @@ export function FolioChat({
             </div>
             <button
               onClick={() => setOpen(false)}
+              aria-label="Close chat"
               style={{
                 marginLeft: "auto",
                 background: "none",
@@ -207,6 +241,9 @@ export function FolioChat({
 
           {/* Messages */}
           <div
+            role="log"
+            aria-live="polite"
+            aria-label="Chat messages"
             style={{
               flex: 1,
               overflowY: "auto",
@@ -217,7 +254,7 @@ export function FolioChat({
             }}
           >
             {error && (
-              <div style={{ color: "#ef4444", fontSize: "13px", textAlign: "center" }}>
+              <div role="alert" style={{ color: "#ef4444", fontSize: "13px", textAlign: "center" }}>
                 {error}
               </div>
             )}
@@ -255,7 +292,24 @@ export function FolioChat({
                         color: colors.muted,
                       }}
                     >
-                      Sources: {msg.sources.join(", ")}
+                      Sources:{" "}
+                      {msg.sources.map((repo, idx) => (
+                        <span key={repo}>
+                          {idx > 0 && ", "}
+                          {context?.username ? (
+                            <a
+                              href={`https://github.com/${context.username}/${repo}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ color: accentColor, textDecoration: "none" }}
+                            >
+                              {repo}
+                            </a>
+                          ) : (
+                            repo
+                          )}
+                        </span>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -294,11 +348,13 @@ export function FolioChat({
             }}
           >
             <input
+              ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKey}
               placeholder="Ask about projects, skills..."
               disabled={loading || !!error}
+              aria-label="Type your message"
               style={{
                 flex: 1,
                 background: colors.bg,
@@ -313,6 +369,7 @@ export function FolioChat({
             <button
               onClick={sendMessage}
               disabled={loading || !input.trim() || !!error}
+              aria-label="Send message"
               style={{
                 background: input.trim() && !loading ? accentColor : colors.border,
                 color: input.trim() && !loading ? "#000" : colors.muted,
@@ -335,6 +392,8 @@ export function FolioChat({
       <div style={{ display: "flex", justifyContent: position === "bottom-right" ? "flex-end" : "flex-start" }}>
         <button
           onClick={() => setOpen((v) => !v)}
+          aria-label={open ? "Close portfolio chat" : "Open portfolio chat"}
+          aria-expanded={open}
           style={{
             width: "56px",
             height: "56px",
