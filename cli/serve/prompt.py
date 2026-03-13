@@ -34,12 +34,19 @@ class SystemPromptGenerator:
                 if first_line and len(first_line) > 20:
                     tone_samples.append(first_line)
 
-        project_list = "\n".join(f"  - {r['name']}: {r.get('description', 'No description')}" for r in repos)
+        project_list = "\n".join(
+            f"  - {r['name']}: {r.get('description') or 'No description'}"
+            for r in repos
+        )
         lang_list = ", ".join(sorted(all_languages)) if all_languages else "various"
-        topic_list = ", ".join(sorted(all_topics)[:15]) if all_topics else "software development"
+        topic_list = (
+            ", ".join(sorted(all_topics)[:15]) if all_topics else "software development"
+        )
 
         bio_section = f"\nBio: {profile['bio']}" if profile["bio"] else ""
-        location_section = f"\nLocation: {profile['location']}" if profile["location"] else ""
+        location_section = (
+            f"\nLocation: {profile['location']}" if profile["location"] else ""
+        )
 
         prompt = f"""You are a portfolio assistant for {name} (@{username}), a software developer.
 
@@ -78,6 +85,6 @@ THINGS TO DECLINE GRACEFULLY:
 - Anything requiring information not in your knowledge base
 
 OPENING GREETING (use something like this):
-"Hi! I can tell you about {name}'s projects — including {', '.join(repo_names[:3])}{", and more" if len(repo_names) > 3 else ""}. What would you like to know?"
+"Hi! I can tell you about {name}'s projects — including {", ".join(repo_names[:3])}{", and more" if len(repo_names) > 3 else ""}. What would you like to know?"
 """
         return prompt.strip()
