@@ -44,7 +44,8 @@ class ChromaStore:
 
         texts = [c.content for c in chunks]
         ids = [c.id for c in chunks]
-        metadatas = [c.metadata for c in chunks]
+        # Merge chunk type into metadata so it can be used as a filter in query()
+        metadatas = [{**c.metadata, "type": c.type} for c in chunks]
 
         # Embed in batches of 50 to avoid memory issues
         batch_size = 50
@@ -123,11 +124,15 @@ class ChromaStore:
 
     def clear(self) -> None:
         """Delete all stored vectors for this username."""
-        import shutil
-        if self.chroma_path.exists():
-            shutil.rmtree(self.chroma_path)
-        self.chroma_path.mkdir(parents=True, exist_ok=True)
-        self._client = None
+        # Use the ChromaDB API to delete the collection so the Rust backend
+        # properly releases its in-memory state.  Deleting the directory while
+        # the backend is still alive causes "readonly database" errors on the
+        # subsequent client connection.
+        # Ensure the client is initialised before we try to delete the collection.
+        self._get_collection()
+        self._client.delete_collection(COLLECTION_NAME)
+        # Reset the collection reference; the client is kept alive so it can be
+        # reused immediately (e.g. for add_chunks called right after clear).
         self._collection = None
 
     def count(self) -> int:
