@@ -23,10 +23,10 @@ console = Console()
 @app.command()
 def build(
     username: str = typer.Option(..., "--username", "-u", help="GitHub username to crawl"),
-    embedder: str = typer.Option("local", "--embedder", "-e", help="Embedding backend: local | openai | voyage"),
-    refresh: bool = typer.Option(False, "--refresh", help="Re-crawl and rebuild existing database"),
-    token: Optional[str] = typer.Option(None, "--token", "-t", help="GitHub personal access token (increases rate limit)"),
-    include_private: bool = typer.Option(False, "--include-private", help="Include private repos (requires token)"),
+    embedder: str = typer.Option(default="local", help="Embedding backend: local | openai | voyage"),
+    refresh: bool = typer.Option(default=False, help="Re-crawl and rebuild existing database"),
+    token: Optional[str] = typer.Option(default=None, help="GitHub personal access token (increases rate limit)"),
+    include_private: bool = typer.Option(default=False, help="Include private repos (requires token)"),
 ):
     """
     Crawl a GitHub profile and build a local vector database.
@@ -124,10 +124,10 @@ def build(
 @app.command()
 def serve(
     username: str = typer.Option(..., "--username", "-u", help="GitHub username to serve"),
-    port: int = typer.Option(8000, "--port", "-p", help="Port to run the server on"),
-    host: str = typer.Option("127.0.0.1", "--host", help="Host to bind to"),
-    llm: str = typer.Option("openai", "--llm", help="LLM provider: openai | anthropic | ollama"),
-    model: Optional[str] = typer.Option(None, "--model", help="Model name override"),
+    port: int = typer.Option(default=8000, help="Port to run the server on"),
+    host: str = typer.Option(default="127.0.0.1", help="Host to bind to"),
+    llm: str = typer.Option(default="openai", help="LLM provider: openai | anthropic | ollama"),
+    model: Optional[str] = typer.Option(None, help="Model name override"),
 ):
     """
     Start the FolioChat API server.
