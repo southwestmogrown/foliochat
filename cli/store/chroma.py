@@ -61,6 +61,24 @@ class ChromaStore:
             metadatas=metadatas,
         )
 
+    def _store_with_embeddings(self, chunks, embeddings: list) -> None:
+        """Store chunks alongside their pre-computed embeddings.
+
+        Used by the CLI ``build`` command which computes embeddings in a
+        separate loop so that a Rich progress bar can be displayed.
+        """
+        collection = self._get_collection()
+        texts = [c.content for c in chunks]
+        ids = [c.id for c in chunks]
+        metadatas = [{**c.metadata, "type": c.type} for c in chunks]
+
+        collection.add(
+            ids=ids,
+            embeddings=embeddings,
+            documents=texts,
+            metadatas=metadatas,
+        )
+
     def query(
         self,
         query_text: str,
