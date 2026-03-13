@@ -1,0 +1,5 @@
+[build]
+buildCommand = "pip install -e '.[dev]' && foliochat build --refresh --username southwestmogrown --token $GITHUB_TOKEN --embedder local"
+
+[deploy]
+startCommand = "foliochat serve --username southwestmogrown --llm anthropic --port $PORT"
