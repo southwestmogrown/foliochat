@@ -1,6 +1,5 @@
 """Smoke tests for the FolioChat React/TypeScript widget source file."""
 
-import re
 from pathlib import Path
 
 COMPONENT_PATH = Path(__file__).parent.parent / "foliochat.tsx"

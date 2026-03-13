@@ -41,12 +41,21 @@ def build(
     from cli.embedder.embedder import get_embedder
     from cli.store.chroma import ChromaStore
     from cli.serve.prompt import SystemPromptGenerator
+    from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, TimeElapsedColumn
     import json
 
     console.print(Panel(
         f"[bold orange1]FolioChat[/bold orange1] — Building portfolio database for [cyan]{username}[/cyan]",
         border_style="orange1"
     ))
+
+    # Initialise the store early so we can check whether a database already
+    # exists before doing any expensive work (crawl, embed, etc.).
+    store = ChromaStore(username=username)
+    if store.exists() and not refresh:
+        console.print(f"[yellow]⚠[/yellow]  Database already exists for [cyan]{username}[/cyan].")
+        console.print("  Use [bold]--refresh[/bold] to re-crawl and rebuild.")
+        raise typer.Exit(1)
 
     # 1. Crawl
     console.print("\n[bold]Step 1/4:[/bold] Crawling GitHub profile...")
@@ -63,13 +72,29 @@ def build(
     # 3. Embed + Store
     console.print(f"\n[bold]Step 3/4:[/bold] Embedding with [cyan]{embedder}[/cyan] backend...")
     embedder_instance = get_embedder(embedder)
-    store = ChromaStore(username=username)
 
     if refresh:
         store.clear()
         console.print("  [yellow]↺[/yellow] Cleared existing database")
 
-    store.add_chunks(chunks, embedder_instance)
+    batch_size = 50
+    texts = [c.content for c in chunks]
+    all_embeddings: list = []
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("  [progress.description]{task.description}"),
+        BarColumn(),
+        TextColumn("{task.completed}/{task.total} chunks"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Embedding...", total=len(texts))
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i : i + batch_size]
+            all_embeddings.extend(embedder_instance.embed(batch))
+            progress.advance(task, advance=len(batch))
+
+    store._store_with_embeddings(chunks, all_embeddings)
     console.print(f"  [green]✓[/green] Stored {len(chunks)} chunks in vector database")
 
     # 4. Generate system prompt
