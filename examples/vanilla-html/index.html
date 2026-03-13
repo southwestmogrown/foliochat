@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Portfolio</title>
+    <style>
+      /* ── Basic portfolio page styles ──────────────────────────────────────── */
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #0f1117;
+        color: #e2e8f0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .hero {
+        text-align: center;
+        padding: 2rem;
+      }
+
+      .hero h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: #f97316;
+      }
+
+      .hero p {
+        font-size: 1.125rem;
+        color: #6b7280;
+        max-width: 480px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hero">
+      <h1>Hi, I'm Alex 👋</h1>
+      <p>
+        Full-stack developer building open-source tools. Click the chat button
+        to ask about my projects!
+      </p>
+    </div>
+
+    <!--
+      FolioChat widget — loaded via CDN
+      ════════════════════════════════════════════════════════════════════════════
+      This uses React + ReactDOM from the CDN, then mounts the FolioChat widget
+      into the #foliochat-root container below.
+
+      BEFORE GOING TO PRODUCTION:
+        Replace FOLIOCHAT_URL with the public URL of your FolioChat server.
+    -->
+    <div id="foliochat-root"></div>
+
+    <!-- Step 1: Load React and ReactDOM (UMD builds) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Step 2: Load the FolioChat UMD bundle -->
+    <script src="https://unpkg.com/foliochat/dist/foliochat.umd.js"></script>
+
+    <!-- Step 3: Mount the widget -->
+    <script>
+      (function () {
+        // ── Configuration ────────────────────────────────────────────────────
+        // Replace with the URL where your `foliochat serve` is running.
+        // For local development: http://localhost:8000
+        // For production:        https://foliochat.yourserver.com
+        var FOLIOCHAT_URL = "http://localhost:8000";
+
+        // ── Mount ────────────────────────────────────────────────────────────
+        var container = document.getElementById("foliochat-root");
+        var root = ReactDOM.createRoot(container);
+
+        root.render(
+          React.createElement(FolioChat.FolioChat, {
+            endpoint: FOLIOCHAT_URL,
+            theme: "dark",         // "dark" | "light" | "auto"
+            position: "bottom-right", // "bottom-right" | "bottom-left"
+            accentColor: "#f97316",   // any CSS color
+          })
+        );
+      })();
+    </script>
+  </body>
+</html>
