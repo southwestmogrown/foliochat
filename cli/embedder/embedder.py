@@ -82,10 +82,18 @@ class OpenAIEmbedder(BaseEmbedder):
     MODEL_NAME = "text-embedding-3-small"
 
     def __init__(self, api_key: Optional[str] = None):
+        import os
+
+        resolved_key = api_key or os.environ.get("OPENAI_API_KEY")
+        if not resolved_key:
+            raise ValueError(
+                "OpenAI API key is required. "
+                "Set the OPENAI_API_KEY environment variable or pass api_key='your-key'."
+            )
         try:
             from openai import OpenAI
-            import os
-            self._client = OpenAI(api_key=api_key or os.environ.get("OPENAI_API_KEY"))
+
+            self._client = OpenAI(api_key=resolved_key)
         except ImportError:
             raise ImportError("openai not installed. Run: pip install openai")
 
@@ -115,12 +123,18 @@ class VoyageEmbedder(BaseEmbedder):
     MODEL_NAME = "voyage-3"
 
     def __init__(self, api_key: Optional[str] = None):
+        import os
+
+        resolved_key = api_key or os.environ.get("VOYAGE_API_KEY")
+        if not resolved_key:
+            raise ValueError(
+                "Voyage API key is required. "
+                "Set the VOYAGE_API_KEY environment variable or pass api_key='your-key'."
+            )
         try:
             import voyageai
-            import os
-            self._client = voyageai.Client(
-                api_key=api_key or os.environ.get("VOYAGE_API_KEY")
-            )
+
+            self._client = voyageai.Client(api_key=resolved_key)
         except ImportError:
             raise ImportError("voyageai not installed. Run: pip install voyageai")
 
