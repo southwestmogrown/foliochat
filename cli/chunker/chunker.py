@@ -157,8 +157,8 @@ class Chunker:
             metadata={
                 "username": username,
                 "repo": repo["name"],
-                "languages": list(repo["languages"].keys()),
-                "topics": repo["topics"],
+                "languages": ",".join(repo["languages"].keys()),
+                "topics": ",".join(repo["topics"]) if repo["topics"] else "",
             }
         )
 

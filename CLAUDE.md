@@ -59,3 +59,36 @@ FolioChat is a RAG pipeline that converts a GitHub profile into a portfolio chat
 | `VOYAGE_API_KEY` | `--embedder voyage` |
 | `OLLAMA_HOST` | `--llm ollama` (default: `http://localhost:11434`) |
 | `CORS_ORIGINS` | Serve phase; comma-separated (default: `*`) |
+
+## Known Bugs Fixed
+
+### Metadata serialization (chunker.py)
+ChromaDB rejects empty lists in metadata. Any field that could be an empty list must be
+serialized to a comma-separated string with an empty string fallback. This applies to
+`topics` and `languages` in all chunk types:
+
+```python
+"topics": ",".join(repo["topics"]) if repo["topics"] else "",
+"languages": ",".join(repo["languages"].keys()) if repo["languages"] else "",
+```
+
+When reading these fields back in the serve phase, split on `","` to reconstruct the list.
+Do not revert these to list values — ChromaDB will reject them.
+
+### repo is a dict, not a PyGithub object (chunker.py)
+The crawler returns plain dicts, not PyGithub objects. Do not call PyGithub methods like
+`repo.get_topics()` or `repo.get_languages()` anywhere in chunker.py. Always use dict
+access: `repo["topics"]`, `repo["languages"]`, etc.
+
+### GitHub token required for crawling
+The crawler requires a GitHub personal access token to avoid 403 errors. Pass via
+`--token` flag or set `GITHUB_TOKEN` in `.env`. Required scopes: `public_repo`, `read:user`.
+
+---
+
+## Working Conventions
+
+### DEVLOG
+Append an entry to `DEVLOG.md` at the end of every working session. Each entry should
+include the date, the goal, what was attempted, what broke, how it was fixed, and what
+the next session should tackle. Keep it factual and brief — it doubles as article material.
