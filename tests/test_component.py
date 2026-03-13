@@ -114,3 +114,68 @@ def test_dark_and_light_theme_colors():
     # Each theme object should contain bg, text, border keys
     for key in ("bg", "text", "border"):
         assert key in src, f"Color key '{key}' missing from THEMES"
+
+
+def test_auto_theme_live_update():
+    """Auto theme must listen for system color-scheme changes via matchMedia."""
+    src = _source()
+    assert "matchMedia" in src
+    assert "addEventListener" in src
+    assert "removeEventListener" in src
+    # The handler should react to the correct media query and event
+    assert "prefers-color-scheme: dark" in src
+    assert '"change"' in src or "'change'" in src
+
+
+def test_keyboard_accessibility_aria_labels():
+    """Interactive elements must carry descriptive aria-label attributes."""
+    src = _source()
+    assert 'aria-label="Close chat"' in src
+    assert 'aria-label="Type your message"' in src
+    assert 'aria-label="Send message"' in src
+    # Toggle button has dynamic aria-label
+    assert "Open portfolio chat" in src
+    assert "Close portfolio chat" in src
+
+
+def test_toggle_button_aria_expanded():
+    """Toggle button must expose aria-expanded to communicate open/closed state."""
+    src = _source()
+    assert "aria-expanded" in src
+
+
+def test_messages_container_accessible():
+    """Messages container must have role='log' and aria-live='polite'."""
+    src = _source()
+    assert 'role="log"' in src
+    assert 'aria-live="polite"' in src
+
+
+def test_error_state_role_alert():
+    """Error message must use role='alert' so screen readers announce it."""
+    src = _source()
+    assert 'role="alert"' in src
+
+
+def test_esc_key_closes_chat():
+    """Pressing Escape must close the chat window."""
+    src = _source()
+    assert "Escape" in src
+    # Escape handler must call setOpen(false)
+    assert "setOpen(false)" in src or 'setOpen(false)' in src
+
+
+def test_sources_rendered_as_links():
+    """Source repos must be rendered as clickable anchor tags."""
+    src = _source()
+    assert "<a" in src
+    assert "github.com" in src
+    assert "target" in src
+    assert "rel" in src
+
+
+def test_input_auto_focus_on_open():
+    """Input field must be focused automatically when the chat is opened."""
+    src = _source()
+    assert "inputRef" in src
+    assert "focus()" in src
