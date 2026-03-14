@@ -689,7 +689,9 @@ class TestChunkMethod:
     def test_tech_chunk_metadata_has_languages(self, chunks_by_type):
         for chunk in chunks_by_type["project_tech"]:
             assert "languages" in chunk.metadata
-            assert isinstance(chunk.metadata["languages"], list)
+            # ChromaDB rejects list metadata; languages is serialised as a
+            # comma-separated string (empty string when no languages).
+            assert isinstance(chunk.metadata["languages"], str)
 
     # ── project_story chunk content ───────────────────────────────────────
 
