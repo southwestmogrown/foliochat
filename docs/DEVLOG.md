@@ -100,10 +100,6 @@ Railway dashboard.
 - Wire up React widget against live Railway API
 - Begin Issue 2: bundle widget for portfolio consumption
 
-# FolioChat Devlog
-
----
-
 ## 2026-03-13 — GitHub token not loaded on Railway; crawl hangs
 
 **Goal:** Fix Railway deployment hanging during the build/crawl phase due to GitHub API rate limiting.
@@ -120,4 +116,32 @@ Railway dashboard.
 
 **Railway action required:** Set `GITHUB_TOKEN` in the Railway service's Variables dashboard. The `.env` file is never deployed.
 
-**Next session:** Verify the Railway deploy succeeds end-to-end with the token set in the dashboard. Consider adding a `/health` check that surfaces whether the build phase completed successfully.
+---
+
+## 2026-03-14 — Railway token issue confirmed resolved; code cleanup
+
+### Root cause confirmed
+The hang was entirely a Railway-side configuration gap: `GITHUB_TOKEN` had not been set in the Railway service's Variables dashboard. Once the variable was added there, the existing `os.environ.get("GITHUB_TOKEN")` fallback in `cli/main.py` picked it up correctly. No further code changes to the token-reading path were needed.
+
+### Cleanup performed
+
+**`railway.toml` — added `--host 0.0.0.0` to the serve command**
+Railway routes external traffic to the container's port; the server must bind to all interfaces, not just `127.0.0.1`. Without this, the API would start but be unreachable from outside the container.
+```toml
+# Before
+python -m cli.main serve ... --port $PORT
+# After
+python -m cli.main serve ... --host 0.0.0.0 --port $PORT
+```
+
+**`tests/test_chunker.py` — corrected language metadata type assertion**
+`test_tech_chunk_metadata_has_languages` was asserting `isinstance(languages, list)`. The chunker correctly serialises `languages` to a comma-separated string for ChromaDB compatibility (ChromaDB rejects list values in metadata — documented in CLAUDE.md). Updated the assertion to `isinstance(languages, str)`.
+
+**`docs/DEVLOG.md` — removed duplicate top-level header**
+A stray `# FolioChat Devlog` header had been inserted mid-file, duplicating the `# FolioChat DEVLOG` at line 1. Removed the duplicate.
+
+### Next session
+- Hit `/health` and `/chat` on the Railway public URL
+- Wire up the React widget against the live Railway API
+- Begin Issue 2: bundle widget for portfolio consumption
+
