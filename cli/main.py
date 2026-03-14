@@ -9,9 +9,12 @@ Usage:
 
 import typer
 import os
+from dotenv import load_dotenv
 from rich.console import Console
 from rich.panel import Panel
 from typing import Optional
+
+load_dotenv()
 
 app = typer.Typer(
     name="foliochat",
@@ -60,7 +63,15 @@ def build(
 
     # 1. Crawl
     console.print("\n[bold]Step 1/4:[/bold] Crawling GitHub profile...")
-    crawler = GithubCrawler(token=token or os.environ.get("GITHUB_TOKEN"))
+    resolved_token = token or os.environ.get("GITHUB_TOKEN")
+    if not resolved_token:
+        console.print(
+            "[red]✗[/red] No GitHub token found. Set GITHUB_TOKEN in your environment "
+            "or pass [bold]--token[/bold]. Without a token, the GitHub API allows only "
+            "60 requests/hour and crawling will hang or fail."
+        )
+        raise typer.Exit(1)
+    crawler = GithubCrawler(token=resolved_token)
     portfolio_data = crawler.crawl(username, include_private=include_private)
     console.print(f"  [green]✓[/green] Found {len(portfolio_data['repos'])} repositories")
 
