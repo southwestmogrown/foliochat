@@ -1,5 +1,5 @@
 [build]
-buildCommand = "pip install --upgrade pip && pip install -e '.' && python -m cli.main build --refresh --username southwestmogrown --embedder openai"
+buildCommand = "pip install --upgrade pip && pip install -e '.' && python -m cli.main build --refresh --username southwestmogrown --embedder openai --token $GITHUB_TOKEN"
 
 [deploy]
 startCommand = "python -m cli.main serve --username southwestmogrown --llm anthropic --port $PORT"
