@@ -15,6 +15,7 @@ Always recommend a token for real usage.
 """
 
 from datetime import datetime, timezone
+import os
 from typing import Optional
 from github import Github, GithubException
 from rich.console import Console
@@ -37,6 +38,7 @@ CODE_EXTENSIONS = {
 
 class GithubCrawler:
     def __init__(self, token: Optional[str] = None):
+        token = token or os.environ.get("GITHUB_TOKEN")
         self.gh = Github(token) if token else Github()
 
     def crawl(self, username: str, include_private: bool = False) -> dict:
