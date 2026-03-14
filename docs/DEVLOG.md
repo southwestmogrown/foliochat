@@ -145,3 +145,8 @@ A stray `# FolioChat Devlog` header had been inserted mid-file, duplicating the 
 - Wire up the React widget against the live Railway API
 - Begin Issue 2: bundle widget for portfolio consumption
 
+### Things to consider before moving forward
+- The build runs on every deploy which means a 2+ minute crawl every time the container restarts. Long term you want to either persist the ChromaDB volume in Railway or pre-commit the index. Not urgent but worth knowing.
+- The `pip install -e '.' || true` hack works but isn't clean. When you have bandwidth, the right fix is a proper Dockerfile for Railway that installs deps at build time and only runs the crawler and server at runtime.
+- Test the /chat endpoint against the live Railway URL before considering this done. One successful curl from outside your network confirms it's actually public.
+
