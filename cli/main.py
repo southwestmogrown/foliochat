@@ -8,6 +8,7 @@ Usage:
 """
 
 import typer
+import os
 from rich.console import Console
 from rich.panel import Panel
 from typing import Optional
@@ -59,7 +60,7 @@ def build(
 
     # 1. Crawl
     console.print("\n[bold]Step 1/4:[/bold] Crawling GitHub profile...")
-    crawler = GithubCrawler(token=token)
+    crawler = GithubCrawler(token=token or os.environ.get("GITHUB_TOKEN"))
     portfolio_data = crawler.crawl(username, include_private=include_private)
     console.print(f"  [green]✓[/green] Found {len(portfolio_data['repos'])} repositories")
 
