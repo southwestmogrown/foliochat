@@ -1,2 +1,2 @@
 [deploy]
-startCommand = "python -m cli.main serve --username southwestmogrown --llm anthropic --port $PORT"
+startCommand = "pip install -e '.' && python -m cli.main serve --username southwestmogrown --llm anthropic --port $PORT"
