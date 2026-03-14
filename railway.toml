@@ -1,2 +1,2 @@
 [deploy]
-startCommand = "pip install -e '.' || true && python -m cli.main build --refresh --username southwestmogrown --embedder openai --token $GITHUB_TOKEN && python -m cli.main serve --username southwestmogrown --llm anthropic --port $PORT"
+startCommand = "pip install -e '.' || true && python -m cli.main build --refresh --username southwestmogrown --embedder openai && python -m cli.main serve --username southwestmogrown --llm anthropic --port $PORT"
