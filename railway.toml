@@ -1,2 +1,2 @@
 [deploy]
-startCommand = "pip install -e '.' || true && python -m cli.main build --refresh --username southwestmogrown --embedder openai && python -m cli.main serve --username southwestmogrown --llm anthropic --host 0.0.0.0 --port $PORT"
+startCommand = "pip install -e '.' || true && python -m cli.main build --refresh --username southwestmogrown --embedder openai && python -m cli.main serve --username southwestmogrown --llm anthropic --port $PORT --host 0.0.0.0"
