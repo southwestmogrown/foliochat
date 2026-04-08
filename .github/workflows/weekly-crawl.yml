@@ -16,7 +16,7 @@ jobs:
       - run: pip install -e '.[dev]'
       - name: Build portfolio data
         env:
-          GH_PAT_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           FOLIOCHAT_DIR: ${{ github.workspace }}/foliochat-data
         run: |
