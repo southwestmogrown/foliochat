@@ -1,0 +1,39 @@
+name: Weekly Portfolio Crawl
+
+on:
+  schedule:
+    - cron: "0 0 * * 0"  # Every Sunday at midnight UTC
+  workflow_dispatch:       # Allow manual trigger from GitHub UI
+
+jobs:
+  crawl-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e '.[dev]'
+      - name: Build portfolio data
+        env:
+          GH_PAT_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          FOLIOCHAT_DIR: ${{ github.workspace }}/foliochat-data
+        run: |
+          python -m cli.main build --refresh --username southwestmogrown --embedder openai
+      - name: Commit and push data
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add foliochat-data/
+          git diff --cached --quiet && echo "No changes to commit" || \
+            git commit -m "chore: update portfolio data $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          git push
+      - name: Redeploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+          RAILWAY_SERVICE_ID: ${{ vars.RAILWAY_SERVICE_ID }}
+        run: |
+          curl -X POST "https://gateway.railway.app/v0/start/${RAILWAY_PROJECT_ID}/${RAILWAY_SERVICE_ID}" \
+            -H "Authorization: Bearer ${RAILWAY_TOKEN}"

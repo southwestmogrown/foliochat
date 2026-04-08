@@ -8,11 +8,12 @@ Data lives in ~/.foliochat/[username]/
 """
 
 import json
+import os
 from pathlib import Path
 from typing import Optional
 
 
-FOLIOCHAT_DIR = Path.home() / ".foliochat"
+FOLIOCHAT_DIR = Path(os.environ.get("FOLIOCHAT_DIR", Path.home() / ".foliochat"))
 COLLECTION_NAME = "portfolio"
 
 
