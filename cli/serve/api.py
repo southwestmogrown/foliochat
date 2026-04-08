@@ -8,11 +8,15 @@ POST /chat    → RAG-powered chat
 LLM backends: openai | anthropic | ollama
 """
 
+import logging
 import os
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Literal
+
+logger = logging.getLogger(__name__)
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -22,12 +26,14 @@ OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
 
 # CORS — reads from CORS_ORIGINS env var (comma-separated) or defaults to
 # localhost for local dev. Override in production with your portfolio domain.
-_cors_origins_env = os.environ.get("CORS_ORIGINS", "")
+# Strip surrounding quotes in case the value was set with quotes in Railway.
+_cors_origins_env = os.environ.get("CORS_ORIGINS", "").strip().strip("\"'")
 CORS_ORIGINS: list[str] = (
-    [o.strip() for o in _cors_origins_env.split(",") if o.strip()]
+    [o.strip().strip("\"'") for o in _cors_origins_env.split(",") if o.strip()]
     if _cors_origins_env
     else ["*"]
 )
+logger.info("CORS_ORIGINS: %s", CORS_ORIGINS)
 
 app = FastAPI(title="FolioChat API", version="0.1.0")
 
@@ -38,6 +44,21 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(Exception)
+async def _unhandled(request: Request, exc: Exception):
+    logger.exception("Unhandled exception on %s", request.url.path)
+    origin = request.headers.get("origin", "")
+    headers = {}
+    if origin and (origin in CORS_ORIGINS or "*" in CORS_ORIGINS):
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Vary"] = "Origin"
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"},
+        headers=headers,
+    )
 
 
 # ── Request / Response models ─────────────────────────────────────────────────
