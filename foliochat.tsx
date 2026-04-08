@@ -22,26 +22,28 @@ interface PortfolioContext {
   greeting: string;
 }
 
-// ── Default styles ────────────────────────────────────────────────────────────
+// ── Design tokens ─────────────────────────────────────────────────────────────
 
 const THEMES = {
   dark: {
-    bg: "#0f1117",
-    surface: "#1a1f2e",
-    border: "#2a3347",
-    text: "#e2e8f0",
-    muted: "#6b7280",
-    userBubble: "#1e3a5f",
-    assistantBubble: "#1a1f2e",
+    bg: "#0A0A0A",
+    surface: "#111111",
+    border: "#262626",
+    text: "#EDEDED",
+    muted: "#5A5A5A",
+    userBubble: "#1A1A1A",
+    assistantBubble: "#0F0F0F",
+    accentGlow: "rgba(242, 100, 25, 0.12)",
   },
   light: {
-    bg: "#ffffff",
-    surface: "#f8fafc",
-    border: "#e2e8f0",
-    text: "#1a202c",
-    muted: "#718096",
-    userBubble: "#ebf8ff",
-    assistantBubble: "#f7fafc",
+    bg: "#F5F5F5",
+    surface: "#FFFFFF",
+    border: "#D4D4D4",
+    text: "#111111",
+    muted: "#737373",
+    userBubble: "#E8E8E8",
+    assistantBubble: "#F0F0F0",
+    accentGlow: "rgba(242, 100, 25, 0.08)",
   },
 };
 
@@ -51,7 +53,7 @@ export function FolioChat({
   endpoint,
   theme = "dark",
   position = "bottom-right",
-  accentColor = "#f97316",
+  accentColor = "#F26419",
   greeting,
 }: FolioChatProps) {
   const [open, setOpen] = useState(false);
@@ -68,7 +70,6 @@ export function FolioChat({
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Live-track system color-scheme changes for "auto" theme
   useEffect(() => {
     if (theme !== "auto") return;
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
@@ -81,33 +82,29 @@ export function FolioChat({
     theme === "auto" ? (systemDark ? "dark" : "light") : theme;
   const colors = THEMES[resolvedTheme];
 
-  // Fetch context on mount
   useEffect(() => {
     fetch(`${endpoint}/context`)
       .then((r) => r.json())
       .then((data) => {
         setContext(data);
-        const openingGreeting = greeting || data.greeting || "Hi! Ask me about this developer's projects.";
+        const openingGreeting = greeting || data.greeting || "ENCRYPTED_COMMS ONLINE.";
         setMessages([{ role: "assistant", content: openingGreeting }]);
       })
       .catch(() => {
-        setError("Could not connect to FolioChat server.");
+        setError("CONNECTION REFUSED. CHECK ENDPOINT.");
       });
   }, [endpoint, greeting]);
 
-  // Scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  // Focus input when chat opens (brief delay lets the element mount/paint first)
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [open]);
 
-  // Close on ESC key
   const handleWindowKey = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "Escape" && open) setOpen(false);
@@ -149,7 +146,7 @@ export function FolioChat({
         ...prev,
         {
           role: "assistant",
-          content: "Sorry, something went wrong. Please try again.",
+          content: "TRANSMISSION ERROR. RETRY.",
         },
       ]);
     } finally {
@@ -174,16 +171,17 @@ export function FolioChat({
       {open && (
         <div
           style={{
-            width: "360px",
-            height: "500px",
+            width: "380px",
+            height: "520px",
             background: colors.bg,
             border: `1px solid ${colors.border}`,
-            borderRadius: "16px",
+            borderRadius: "0",
             display: "flex",
             flexDirection: "column",
-            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-            marginBottom: "12px",
+            boxShadow: `0 0 0 1px ${colors.border}, 0 24px 64px rgba(0,0,0,0.6), 0 0 32px ${colors.accentGlow}`,
+            marginBottom: "8px",
             overflow: "hidden",
+            fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
           }}
         >
           {/* Header */}
@@ -191,52 +189,88 @@ export function FolioChat({
             style={{
               background: colors.surface,
               borderBottom: `1px solid ${colors.border}`,
-              padding: "14px 16px",
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
+              padding: "0",
             }}
           >
+            {/* Top bar — system label */}
             <div
               style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "8px",
-                background: accentColor,
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                fontSize: "16px",
-              }}
-            >
-              💬
-            </div>
-            <div>
-              <div style={{ color: colors.text, fontWeight: "600", fontSize: "14px" }}>
-                {context?.username ? `Ask about ${context.username}` : "Portfolio Chat"}
-              </div>
-              <div style={{ color: colors.muted, fontSize: "11px" }}>
-                {context?.repo_count
-                  ? `${context.repo_count} projects in knowledge base`
-                  : "Loading..."}
-              </div>
-            </div>
-            <button
-              onClick={() => setOpen(false)}
-              aria-label="Close chat"
-              style={{
-                marginLeft: "auto",
-                background: "none",
-                border: "none",
+                justifyContent: "space-between",
+                padding: "6px 12px",
+                borderBottom: `1px solid ${colors.border}`,
+                fontSize: "9px",
+                letterSpacing: "0.15em",
                 color: colors.muted,
-                cursor: "pointer",
-                fontSize: "18px",
-                lineHeight: 1,
-                padding: "0",
               }}
             >
-              ×
-            </button>
+              <span>FOLIOCHAT // ENCRYPTED_COMMS</span>
+              <span style={{ color: accentColor }}>● STATUS: OPTIMAL</span>
+            </div>
+
+            {/* Main header row */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 12px",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    color: colors.text,
+                    fontWeight: "700",
+                    fontSize: "11px",
+                    letterSpacing: "0.12em",
+                  }}
+                >
+                  {context?.username
+                    ? `${context.username.toUpperCase()}.PORTFOLIO`
+                    : "PORTFOLIO.COMMS"}
+                </div>
+                <div
+                  style={{
+                    color: colors.muted,
+                    fontSize: "9px",
+                    letterSpacing: "0.1em",
+                    marginTop: "2px",
+                  }}
+                >
+                  {context?.repo_count
+                    ? `${context.repo_count} REPOS INDEXED`
+                    : "INDEXING..."}
+                </div>
+              </div>
+              <button
+                onClick={() => setOpen(false)}
+                aria-label="Close chat"
+                style={{
+                  background: "none",
+                  border: `1px solid ${colors.border}`,
+                  color: colors.muted,
+                  cursor: "pointer",
+                  fontSize: "11px",
+                  letterSpacing: "0.05em",
+                  padding: "3px 8px",
+                  borderRadius: "0",
+                  fontFamily: "inherit",
+                  transition: "color 0.1s, border-color 0.1s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = accentColor;
+                  e.currentTarget.style.borderColor = accentColor;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = colors.muted;
+                  e.currentTarget.style.borderColor = colors.border;
+                }}
+              >
+                [X]
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
@@ -247,14 +281,26 @@ export function FolioChat({
             style={{
               flex: 1,
               overflowY: "auto",
-              padding: "16px",
+              padding: "16px 12px",
               display: "flex",
               flexDirection: "column",
-              gap: "12px",
+              gap: "10px",
+              scrollbarWidth: "thin",
+              scrollbarColor: `${colors.border} transparent`,
             }}
           >
             {error && (
-              <div role="alert" style={{ color: "#ef4444", fontSize: "13px", textAlign: "center" }}>
+              <div
+                role="alert"
+                style={{
+                  color: accentColor,
+                  fontSize: "10px",
+                  letterSpacing: "0.1em",
+                  textAlign: "center",
+                  border: `1px solid ${accentColor}`,
+                  padding: "6px 10px",
+                }}
+              >
                 {error}
               </div>
             )}
@@ -264,44 +310,70 @@ export function FolioChat({
                 key={i}
                 style={{
                   display: "flex",
-                  justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
+                  flexDirection: "column",
+                  alignItems: msg.role === "user" ? "flex-end" : "flex-start",
                 }}
               >
                 <div
                   style={{
-                    maxWidth: "80%",
+                    fontSize: "9px",
+                    letterSpacing: "0.12em",
+                    color: msg.role === "user" ? accentColor : colors.muted,
+                    marginBottom: "3px",
+                    paddingLeft: msg.role === "user" ? "0" : "2px",
+                    paddingRight: msg.role === "user" ? "2px" : "0",
+                  }}
+                >
+                  {msg.role === "user" ? "> INPUT" : "// RESPONSE"}
+                </div>
+                <div
+                  style={{
+                    maxWidth: "88%",
                     background: msg.role === "user" ? colors.userBubble : colors.assistantBubble,
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: msg.role === "user"
-                      ? "16px 16px 4px 16px"
-                      : "16px 16px 16px 4px",
-                    padding: "10px 14px",
-                    fontSize: "13px",
+                    border: `1px solid ${msg.role === "user" ? accentColor + "33" : colors.border}`,
+                    borderRadius: "0",
+                    padding: "8px 12px",
+                    fontSize: "12px",
                     color: colors.text,
-                    lineHeight: "1.5",
+                    lineHeight: "1.6",
+                    fontFamily: msg.role === "user"
+                      ? "inherit"
+                      : "'Inter', 'Geist Sans', system-ui, sans-serif",
                   }}
                 >
                   {msg.content}
                   {msg.sources && msg.sources.length > 0 && (
                     <div
                       style={{
-                        marginTop: "6px",
+                        marginTop: "8px",
                         paddingTop: "6px",
                         borderTop: `1px solid ${colors.border}`,
-                        fontSize: "10px",
+                        fontSize: "9px",
+                        letterSpacing: "0.08em",
                         color: colors.muted,
+                        fontFamily: "inherit",
                       }}
                     >
-                      Sources:{" "}
+                      {"// SOURCES: "}
                       {msg.sources.map((repo, idx) => (
                         <span key={repo}>
-                          {idx > 0 && ", "}
+                          {idx > 0 && " · "}
                           {context?.username ? (
                             <a
                               href={`https://github.com/${context.username}/${repo}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              style={{ color: accentColor, textDecoration: "none" }}
+                              style={{
+                                color: accentColor,
+                                textDecoration: "none",
+                                letterSpacing: "0.05em",
+                              }}
+                              onMouseEnter={(e) =>
+                                (e.currentTarget.style.textDecoration = "underline")
+                              }
+                              onMouseLeave={(e) =>
+                                (e.currentTarget.style.textDecoration = "none")
+                              }
                             >
                               {repo}
                             </a>
@@ -317,16 +389,27 @@ export function FolioChat({
             ))}
 
             {loading && (
-              <div style={{ display: "flex", justifyContent: "flex-start" }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                <div
+                  style={{
+                    fontSize: "9px",
+                    letterSpacing: "0.12em",
+                    color: colors.muted,
+                    marginBottom: "3px",
+                    paddingLeft: "2px",
+                  }}
+                >
+                  // RESPONSE
+                </div>
                 <div
                   style={{
                     background: colors.assistantBubble,
                     border: `1px solid ${colors.border}`,
-                    borderRadius: "16px 16px 16px 4px",
-                    padding: "10px 16px",
-                    color: colors.muted,
-                    fontSize: "20px",
-                    letterSpacing: "2px",
+                    borderRadius: "0",
+                    padding: "8px 16px",
+                    color: accentColor,
+                    fontSize: "14px",
+                    letterSpacing: "0.3em",
                   }}
                 >
                   ···
@@ -341,77 +424,129 @@ export function FolioChat({
           <div
             style={{
               borderTop: `1px solid ${colors.border}`,
-              padding: "12px",
+              padding: "10px 12px",
               display: "flex",
               gap: "8px",
               background: colors.surface,
             }}
           >
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKey}
-              placeholder="Ask about projects, skills..."
-              disabled={loading || !!error}
-              aria-label="Type your message"
+            <div
               style={{
+                display: "flex",
+                alignItems: "center",
                 flex: 1,
-                background: colors.bg,
                 border: `1px solid ${colors.border}`,
-                borderRadius: "8px",
-                padding: "8px 12px",
-                color: colors.text,
-                fontSize: "13px",
-                outline: "none",
+                background: colors.bg,
               }}
-            />
+            >
+              <span
+                style={{
+                  color: accentColor,
+                  fontSize: "11px",
+                  padding: "0 8px",
+                  letterSpacing: "0.05em",
+                  userSelect: "none",
+                }}
+              >
+                &gt;_
+              </span>
+              <input
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKey}
+                placeholder="ENTER QUERY..."
+                disabled={loading || !!error}
+                aria-label="Type your message"
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  border: "none",
+                  color: colors.text,
+                  fontSize: "11px",
+                  letterSpacing: "0.05em",
+                  outline: "none",
+                  padding: "8px 8px 8px 0",
+                  fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
+                }}
+              />
+            </div>
             <button
               onClick={sendMessage}
               disabled={loading || !input.trim() || !!error}
               aria-label="Send message"
               style={{
-                background: input.trim() && !loading ? accentColor : colors.border,
-                color: input.trim() && !loading ? "#000" : colors.muted,
-                border: "none",
-                borderRadius: "8px",
-                padding: "8px 14px",
+                background: input.trim() && !loading ? accentColor : colors.surface,
+                color: input.trim() && !loading ? "#000000" : colors.muted,
+                border: `1px solid ${input.trim() && !loading ? accentColor : colors.border}`,
+                borderRadius: "0",
+                padding: "8px 12px",
                 cursor: input.trim() && !loading ? "pointer" : "default",
-                fontSize: "13px",
-                fontWeight: "600",
-                transition: "all 0.2s",
+                fontSize: "10px",
+                fontWeight: "700",
+                letterSpacing: "0.1em",
+                fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
+                transition: "all 0.1s",
               }}
             >
-              ↑
+              SEND
             </button>
           </div>
         </div>
       )}
 
       {/* Toggle button */}
-      <div style={{ display: "flex", justifyContent: position === "bottom-right" ? "flex-end" : "flex-start" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: position === "bottom-right" ? "flex-end" : "flex-start",
+        }}
+      >
         <button
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? "Close portfolio chat" : "Open portfolio chat"}
           aria-expanded={open}
           style={{
-            width: "56px",
-            height: "56px",
-            borderRadius: "50%",
-            background: accentColor,
-            border: "none",
+            background: open ? colors.surface : accentColor,
+            border: `1px solid ${open ? colors.border : accentColor}`,
+            borderRadius: "0",
             cursor: "pointer",
-            fontSize: "22px",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-            transition: "transform 0.2s",
+            padding: "10px 16px",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
+            gap: "8px",
+            boxShadow: open
+              ? `0 0 0 1px ${colors.border}`
+              : `0 0 24px ${accentColor}44, 0 4px 16px rgba(0,0,0,0.4)`,
+            transition: "all 0.1s",
+            fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+          onMouseEnter={(e) => {
+            if (!open) e.currentTarget.style.boxShadow = `0 0 32px ${accentColor}66, 0 4px 16px rgba(0,0,0,0.4)`;
+          }}
+          onMouseLeave={(e) => {
+            if (!open) e.currentTarget.style.boxShadow = `0 0 24px ${accentColor}44, 0 4px 16px rgba(0,0,0,0.4)`;
+          }}
         >
-          {open ? "×" : "💬"}
+          <span
+            style={{
+              fontSize: "9px",
+              letterSpacing: "0.15em",
+              color: open ? colors.muted : "#000000",
+              fontWeight: "700",
+            }}
+          >
+            {open ? "[CLOSE]" : "ENCRYPTED_COMMS"}
+          </span>
+          <span
+            style={{
+              width: "6px",
+              height: "6px",
+              background: open ? colors.muted : "#000000",
+              borderRadius: "50%",
+              flexShrink: 0,
+            }}
+          />
         </button>
       </div>
     </div>
