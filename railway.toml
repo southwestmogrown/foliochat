@@ -1,2 +1,2 @@
 [deploy]
-startCommand = "pip install -e '.' || true && mkdir -p ~/.foliochat/southwestmogrown && cp -r foliochat-data/* ~/.foliochat/southwestmogrown/ || python -m cli.main build --refresh --username southwestmogrown --embedder openai && python -m cli.main serve --username southwestmogrown --llm anthropic --port $PORT --host 0.0.0.0"
+startCommand = "pip install -e '.' || true && cp -r foliochat-data/* ~/.foliochat/ || python -m cli.main build --refresh --username southwestmogrown --embedder openai && python -m cli.main serve --username southwestmogrown --llm anthropic --port $PORT --host 0.0.0.0"
